@@ -599,7 +599,7 @@ class _PathParents(Sequence):
         return "<{}.parents>".format(self._pathcls.__name__)
 
 
-class PurePath(object):
+class PurePath(str):
     """PurePath represents a filesystem path and offers operations which
     don't imply any actual filesystem I/O.  Depending on your system,
     instantiating a PurePath will return either a PurePosixPath or a
@@ -647,7 +647,7 @@ class PurePath(object):
     def _from_parts(cls, args, init=True):
         # We need to call _parse_args on the instance, so as to get the
         # right flavour.
-        self = object.__new__(cls)
+        self = str.__new__(cls, os.path.join(*args)) #TODO do not use os.path.join
         drv, root, parts = self._parse_args(args)
         self._drv = drv
         self._root = root
@@ -658,7 +658,7 @@ class PurePath(object):
 
     @classmethod
     def _from_parsed_parts(cls, drv, root, parts, init=True):
-        self = object.__new__(cls)
+        self = str.__new__(cls, os.path.join(drv, root, *parts)) #TODO do not use os.path.join
         self._drv = drv
         self._root = root
         self._parts = parts
