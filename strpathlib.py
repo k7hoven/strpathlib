@@ -6,6 +6,7 @@ import os
 import posixpath
 import re
 import sys
+import warnings
 from collections import Sequence
 from contextlib import contextmanager
 from errno import EINVAL, ENOENT, ENOTDIR
@@ -964,10 +965,9 @@ def _make_disabler(name):
                 "This general string functionality is not available for paths."
             ) from None
         if enable == 'warn':
-            import warnings
             warnings.warn(
                 "str method {} may be disabled on paths in future versions.".format(name),
-                FutureWarning, stacklevel=1
+                FutureWarning, stacklevel=2
             )
         elif enable is True:
             pass # str functionality not disabled
@@ -981,11 +981,11 @@ def _make_disabler(name):
 
 _exclude_from_disable = { '__getattribute__',
                           '__add__',
+#                          '__eq__',
+                          '__len__',
                           'startswith',
                           'endswith',
-                          'encode',
-                          '__eq__',
-                          '__len__' }
+                          'encode' }
 
 for name in str.__dict__:
     if name in PurePath.__dict__:
