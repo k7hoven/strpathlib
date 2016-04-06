@@ -965,6 +965,7 @@ class PurePath(str):
         
 
 # Override str methods
+
 def _make_disabler(name):
     assert hasattr(str, name)
     def str_functionality(self, *args, **kwargs):
@@ -972,20 +973,15 @@ def _make_disabler(name):
         try:
             enable = self._enable_str_functionality
         except AttributeError:
-            raise TypeError(
-                "This general string functionality is not available for paths."
-            ) from None
+            raise TypeError("str method '{}' is not available for paths."
+                                .format(name)) from None
         if enable == 'warn':
-            warnings.warn(
-                "str method {} may be disabled on paths in future versions.".format(name),
-                FutureWarning, stacklevel=2
-            )
+            warnings.warn("str method '{}' may be disabled on paths in future versions."
+                              .format(name), FutureWarning, stacklevel = 2)
         elif enable is True:
             pass # str functionality not disabled
         else:
-            raise ValueError(
-                    "Allowed _enable_str_functionality options are a True or 'warn'"
-            )
+            raise ValueError("_enable_str_functionality can be True or 'warn'")
         return getattr(str, name)(self, *args, **kwargs)
     str_functionality.__name__ = name
     return str_functionality
