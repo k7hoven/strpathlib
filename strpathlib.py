@@ -600,6 +600,8 @@ class _PathParents(Sequence):
         return "<{}.parents>".format(self._pathcls.__name__)
 
 
+#_default_enable_str_functionality = 'warn'
+
 class PurePath(str):
     """PurePath represents a filesystem path and offers operations which
     don't imply any actual filesystem I/O.  Depending on your system,
@@ -656,6 +658,11 @@ class PurePath(str):
         self._parts = parts
         if init:
             self._init()
+            
+        try:        
+            self._enable_str_functionality = _default_enable_str_functionality
+        except:
+            pass #do not enable disabled str functionality
         return self
 
     @classmethod
@@ -666,6 +673,10 @@ class PurePath(str):
         self._parts = parts
         if init:
             self._init()
+        try:
+            self._enable_str_functionality = _default_enable_str_functionality
+        except:
+            pass #do not enable disabled str functionality
         return self
 
     @classmethod
