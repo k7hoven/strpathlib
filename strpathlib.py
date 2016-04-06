@@ -609,6 +609,7 @@ class PurePath(str):
     __slots__ = (
         '_drv', '_root', '_parts',
         '_str', '_hash', '_pparts', '_cached_cparts',
+        '_enable_str_functionality'
     )
 
     def __new__(cls, *args):
@@ -949,7 +950,55 @@ class PurePath(str):
             if not fnmatch.fnmatchcase(part, pat):
                 return False
         return True
+        
 
+# Override str methods
+def _make_disabler(name):
+    assert hasattr(str, name)
+    def str_functionality(self, *args, **kwargs):
+        """Method of str, not for use with pathlib path objects."""
+        try:
+            enable = self._enable_str_functionality
+        except AttributeError:
+            raise TypeError(
+                "This general string functionality is not available for paths."
+            ) from None
+        if enable == 'warn':
+            import warnings
+            warnings.warn(
+                "str method {} may be disabled on paths in future versions.".format(name),
+                FutureWarning, stacklevel=1
+            )
+        elif enable is True:
+            pass # str functionality not disabled
+        else:
+            raise ValueError(
+                    "Allowed _enable_str_functionality options are a True or 'warn'"
+            )
+        return getattr(str, name)(self, *args, **kwargs)
+    str_functionality.__name__ = name
+    return str_functionality
+
+_exclude_from_disable = { '__getattribute__',
+                          '__add__',
+                          'startswith',
+                          'endswith',
+                          'encode',
+                          '__eq__',
+                          '__len__' }
+
+for name in str.__dict__:
+    if name in PurePath.__dict__:
+        continue
+    if isinstance(getattr(str, name), property):
+        continue
+    if name in _exclude_from_disable:
+        continue
+    setattr(PurePath, name, _make_disabler(name))
+    print(name + " replaced")
+    
+del _make_disabler
+del _exclude_from_disable
 
 class PurePosixPath(PurePath):
     _flavour = _posix_flavour
