@@ -962,6 +962,10 @@ class PurePath(str):
             if not fnmatch.fnmatchcase(part, pat):
                 return False
         return True
+    
+    def __dir__(self):
+        d = super().__dir__()
+        return [name for name in d if name not in _overridden_str_methods] 
         
 
 # Override str methods
