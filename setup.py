@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Setup script for np."""
+"""Setup script for strpathlib."""
 
 import setuptools
 import os
@@ -21,7 +21,7 @@ setuptools.setup(
     url='https://github.com/k7hoven/strpathlib',
     author='This fork: Koos Zevenhoven',
     author_email='koos.zevenhoven@aalto.fi',
-    packages=setuptools.find_packages(exclude = ('tests',)),
+    py_modules=['strpathlib'],
     long_description=(README + '\n' + CHANGES),
     license='See LICENSE file',
     classifiers=[
