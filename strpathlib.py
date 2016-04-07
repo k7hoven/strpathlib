@@ -600,7 +600,7 @@ class _PathParents(Sequence):
         return "<{}.parents>".format(self._pathcls.__name__)
 
 
-#_default_enable_str_functionality = 'warn'
+_default_enable_str_functionality = 'warn'
 
 class PurePath(str):
     """PurePath represents a filesystem path and offers operations which
@@ -651,7 +651,7 @@ class PurePath(str):
     def _from_parts(cls, args, init=True):
         # We need to call _parse_args on the instance, so as to get the
         # right flavour.
-        self = str.__new__(cls, os.path.join(*args)) #TODO do not use os.path.join
+        self = str.__new__(cls, os.path.join(*args) if args else '') #TODO do not use os.path.join
         drv, root, parts = self._parse_args(args)
         self._drv = drv
         self._root = root
@@ -966,7 +966,7 @@ class PurePath(str):
 
 # Override str methods
 
-def _make_disabler(name):
+def _make_overrider(name):
     assert hasattr(str, name)
     def str_functionality(self, *args, **kwargs):
         """Method of str, not for use with pathlib path objects."""
@@ -984,28 +984,30 @@ def _make_disabler(name):
             raise ValueError("_enable_str_functionality can be True or 'warn'")
         return getattr(str, name)(self, *args, **kwargs)
     str_functionality.__name__ = name
+    str_functionality.__qualname__ = 'PurePath.' + name
     return str_functionality
 
-_exclude_from_disable = { '__getattribute__',
-                          '__add__',
-#                          '__eq__',
-                          '__len__',
-                          'startswith',
-                          'endswith',
-                          'encode' }
+_exclude_from_override = { '__getattribute__',
+                           '__add__',
+                           '__len__',
+                           'startswith',
+                           'endswith',
+                           'encode' }
 
+_overridden_str_methods = []
 for name in str.__dict__:
     if name in PurePath.__dict__:
         continue
     if isinstance(getattr(str, name), property):
         continue
-    if name in _exclude_from_disable:
+    if name in _exclude_from_override:
         continue
-    setattr(PurePath, name, _make_disabler(name))
-    print(name + " replaced")
+    setattr(PurePath, name, _make_overrider(name))
+    _overridden_str_methods.append(name)
+    #print(name + " replaced")
     
-del _make_disabler
-del _exclude_from_disable
+del _make_overrider
+del _exclude_from_override
 
 class PurePosixPath(PurePath):
     _flavour = _posix_flavour
